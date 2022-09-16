@@ -1,0 +1,5 @@
+sprite RDBTA0, 15, 16{
+
+	offset 7, 16
+	patch RDBTA0,0,0
+}
