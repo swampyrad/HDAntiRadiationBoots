@@ -2,7 +2,7 @@
 // Anti-Radiation Boots
 //-------------------------------------------------
 
-const STRIP_RADBOOTS=STRIP_RADSUIT;
+const STRIP_RADBOOTS=1500;
 const ENC_RADBOOTS=35;
 const HDLD_RADBOOTS="RDB";//RaD Boots, lol
 
@@ -14,7 +14,7 @@ class WornRadBoots:HDDamageHandler{
 		//this flag controls whether you can bandage 
 		//with it equipped or not
 	
-
+		-inventory.isarmor
 		inventory.maxamount 1;inventory.amount 1;
 		HDDamageHandler.priority 1000;
 		HDPickup.wornlayer STRIP_RADBOOTS;
