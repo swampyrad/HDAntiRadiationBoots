@@ -2,19 +2,22 @@
 // Anti-Radiation Boots
 //-------------------------------------------------
 
-const STRIP_Radboots=STRIP_Radsuit;
-const ENC_RadBoots=35;
-const HDLD_RadBoots="rdb";//RaD Boots, lol
+const STRIP_RADBOOTS=STRIP_RADSUIT;
+const ENC_RADBOOTS=35;
+const HDLD_RADBOOTS="RDB";//RaD Boots, lol
 
 class WornRadBoots:HDDamageHandler{
 	default{
 		+nointeraction;
 		+noblockmap;
 		-hdpickup.fullcoverage
+		//this flag controls whether you can bandage 
+		//with it equipped or not
+	
 
 		inventory.maxamount 1;inventory.amount 1;
 		HDDamageHandler.priority 1000;
-		HDPickup.wornlayer STRIP_RadBoots;
+		HDPickup.wornlayer STRIP_RADBOOTS;
 		HDPickup.overlaypriority 150;
 		tag "anti-radiation boots";
 	}
@@ -25,22 +28,33 @@ class WornRadBoots:HDDamageHandler{
 		return null;
 	}
 	override void attachtoowner(actor owner){
-		if(!owner.countinv("ProtectiveRadBoots"))owner.A_GiveInventory("ProtectiveRadBoots");
+		if(!owner.countinv("ProtectiveRadBoots"))
+			owner.A_GiveInventory("ProtectiveRadBoots");
+			
 		super.attachtoowner(owner);
 	}
 	override void DetachFromOwner(){
 		owner.A_TakeInventory("ProtectiveRadBoots",1);
-		HDArmour.ArmourChangeEffect(owner);
+		HDArmour.ArmourChangeEffect(owner,60);
+		//this triggers the stun effect when removing gear
+		//the number seems to control how long the stun lasts
+		
 		super.DetachFromOwner();
 	}
 	override void DoEffect(){
+	//stuff here happens every tic
 		if(stamina>0)stamina--;
 	}
 	override double RestrictSpeed(double speedcap){
-		return min(speedcap, 1.7);//default is 1.8
-	}
+	//this changes how fast a player can move while wearing this
+		return min(speedcap, 1.6);//default is 1.8
+	}//lower speedcap since rad boots are thicker and more durable,	
+	 //but a bit heavy to walk in compared to a radsuit
+	 
+/* this is where the radsuit's visor overlay is handled,
+	can be useful for adding certain visual effects
 
-/*
+
 	override void DisplayOverlay(hdstatusbar sb,hdplayerpawn hpl){
 		sb.SetSize(0,320,200);
 		sb.BeginHUD(forcescaled:true);
@@ -56,7 +70,8 @@ class WornRadBoots:HDDamageHandler{
 		int hdflags,
 		int gzflags
 	){
-
+		//can't make this work properly, it's supposed to 
+		//draw the boots where the armor is
 		sb.drawimage(
 			"RDBTA0",
 			(hdflags&HDSB_AUTOMAP)?(4,86):
@@ -66,6 +81,9 @@ class WornRadBoots:HDDamageHandler{
 	}
 
 
+//this is where you can change how equipment affects the
+//way players receive damage when wearing it, here it
+//negates all damges caused by slime floors
 
 	//called from HDPlayerPawn and HDMobBase's DamageMobj
 	override int,name,int,double,int,int,int HandleDamage(
@@ -89,23 +107,12 @@ class WornRadBoots:HDDamageHandler{
 			||!victim
 		)return damage,mod,flags,towound,toburn,tostun,tobreak;
 
-
-		if(
-			mod!="bashing"
-			&&mod!="falling"
-		)stamina+=random(1,damage);
-
-
 		bool breached=false;
 
-		if(mod=="slime"){	//this is literally the only thing these protect against
+		if(mod=="slime"){	//this is literally the only thing these boots protect against
 			victim.A_SetInventory("Heat",countinv("Heat")+max(0,damage-random(4,20)));
-			if(
-				damage>100000
-				&&stamina>2100000
-			){
-				breached=true;
-			}else damage=0;
+			damage=0;
+			//need to add a check here to ignore protectiom if incapped
 		}
 
 		return damage,mod,flags,towound,toburn,tostun,tobreak;
@@ -134,9 +141,9 @@ class ProtectiveRadBoots:HDPickup{
 		inventory.pickupmessage "You got the anti-radiation boots!";
 		inventory.pickupsound "weapons/pocket";
 		inventory.icon "RDBTA0";
-		hdpickup.bulk ENC_RadBoots;
-		tag "Anti-Radiation Boots";
-		hdpickup.refid HDLD_RadBoots;
+		hdpickup.bulk ENC_RADBOOTS;
+		tag "anti-radiation boots";
+		hdpickup.refid HDLD_RADBOOTS;
 	}
 
 	override void DetachFromOwner(){
@@ -158,19 +165,22 @@ class ProtectiveRadBoots:HDPickup{
 	}
 
 	override bool BeforePockets(actor other){
+	//this controls the 'fast-equip' mechanic when
+	//holding Use instead of tapping to pick it up
+	
 		//put on the armour right away
 		if(
 			other.player
 			&&other.player.cmd.buttons&BT_USE
 			&&!other.findinventory("WornRadBoots")
 		){
-			wornlayer=STRIP_RadBoots;
+			wornlayer=STRIP_RADBOOTS;
 			bool intervening=!HDPlayerPawn.CheckStrip(other,self,false);
 			wornlayer=0;
 
 			if(intervening)return false;
 
-			HDArmour.ArmourChangeEffect(other,80);//default is 120
+			HDArmour.ArmourChangeEffect(other,60);//default is 120
 			let onr=HDPlayerPawn(other);
 
 
@@ -210,11 +220,11 @@ class ProtectiveRadBoots:HDPickup{
 		}
 	use:
 		TNT1 A 0{
-			let owrs=wornradboots(findinventory("wornradboots"));
+			let owrs=wornradboots(findinventory("WornRadBoots"));
 			if(owrs){
 				if(!HDPlayerPawn.CheckStrip(self,owrs))return;
 			}else{
-				invoker.wornlayer=STRIP_RADSUIT+1;
+				invoker.wornlayer=STRIP_RADBOOTS+1;
 				if(!HDPlayerPawn.CheckStrip(self,invoker)){
 					invoker.wornlayer=0;
 					return;
@@ -222,7 +232,7 @@ class ProtectiveRadBoots:HDPickup{
 				invoker.wornlayer=0;
 			}
 
-			HDArmour.ArmourChangeEffect(self,80);//dedault is 120
+			HDArmour.ArmourChangeEffect(self,60);//default is 120
 			let onr=HDPlayerPawn(self);
 			if(!countinv("WornRadBoots")){
 				int fff=HDF.TransferFire(self,self);
@@ -245,10 +255,11 @@ class ProtectiveRadBoots:HDPickup{
 				A_GiveInventory("WornRadBoots");
 			}else{
 				actor a;int b;
-				inventory wrs=findinventory("wornradboots");
+				inventory wrs=findinventory("WornRadBoots");
 				[b,a]=A_SpawnItemEx("ProtectiveRadBoots",0,0,height*0.5,0.2,0,2);
 				if(a && wrs){
-/*
+				
+/*	
 					//transfer sticky fire
 					if(wrs.stamina){
 						let aa=HDActor(a);
@@ -261,10 +272,15 @@ class ProtectiveRadBoots:HDPickup{
 						double realamount=hhh.realamount;
 						double intosuit=clamp(realamount*0.9,0,min(200,realamount));
 						let hhh2=heat(a.GiveInventoryType("heat"));
+						
+						/*
+					
 						if(hhh2){
 							hhh2.realamount+=intosuit;
 							hhh.realamount=max(0,hhh.realamount-intosuit);
 						}
+						
+						*/				
 					}
 					vel.z+=0.2;
 					vel.xy+=(cos(angle),sin(angle))*0.7;
