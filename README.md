@@ -11,6 +11,8 @@ Bonus: Anti-Gravity Boots
 
 Similar to the Anti-Radiation Boots, but painted in cherry red.
 These boots allow the wearer to lower their gravity to jump across
-large gaps, or get into hard-to-reach areas.
+large gaps, or get into hard-to-reach areas. Features an internal 
+charging system powered by the ambient frag flying all over the place,
+so you never have to worry about keeping batteries handy. 
 
 Loadout code: AGV
