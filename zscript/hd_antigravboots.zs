@@ -7,7 +7,12 @@ const STRIP_ANTIGRAVBOOTS=1500;
 const ENC_ANTIGRAVBOOTS=35;
 const HDLD_ANTIGRAVBOOTS="AGV";//Anti-GraVity
 
+const ANTIGRAV_MAXCHARGE=500;
+
+
 class WornAntiGravBoots:HDDamageHandler{
+	int antigrav_charge;
+
 	default{
 		+nointeraction;
 		+noblockmap;
@@ -23,6 +28,12 @@ class WornAntiGravBoots:HDDamageHandler{
 		tag "anti-gravity boots";
 	}
 	states{spawn:TNT1 A 0;stop;}
+
+	override void postbeginplay(){
+		super.postbeginplay();
+		antigrav_charge=ANTIGRAV_MAXCHARGE;
+	}
+
 	override inventory createtossable(int amt){
 		let rrr=owner.findinventory("AntiGravBoots");
 		if(rrr)owner.useinventory(rrr);else destroy();
@@ -31,7 +42,7 @@ class WornAntiGravBoots:HDDamageHandler{
 	override void attachtoowner(actor owner){
 		if(!owner.countinv("AntiGravBoots"))
 			owner.A_GiveInventory("AntiGravBoots");
-			owner.gravity=HDCONST_GRAVITY/3;
+			//owner.gravity=HDCONST_GRAVITY/3;
 		super.attachtoowner(owner);
 	}
 	override void DetachFromOwner(){
@@ -39,13 +50,29 @@ class WornAntiGravBoots:HDDamageHandler{
 		HDArmour.ArmourChangeEffect(owner,60);
 		//this triggers the stun effect when removing gear
 		//the number seems to control how long the stun lasts
+
 		owner.gravity=HDCONST_GRAVITY;
 		super.DetachFromOwner();
 	}
+
 	override void DoEffect(){
 	//stuff here happens every tic
 		if(stamina>0)stamina--;
+
+		let hp=HDPlayerPawn(owner);
+
+		if(hp&&antigrav_charge>0){
+			antigrav_charge--;
+
+			if(!antigrav_charge<1){
+				owner.gravity=HDCONST_GRAVITY/3;
+			}else owner.gravity=HDCONST_GRAVITY;
+
+		}else 
+		
+		if(!hp){destroy();return;}
 	}
+
 	override double RestrictSpeed(double speedcap){
 	//this changes how fast a player can move while wearing this
 		return min(speedcap, 2);//default is 1.8
@@ -79,6 +106,14 @@ class WornAntiGravBoots:HDDamageHandler{
 			am?(11,137):(84,-5),
 			am?sb.DI_TOPLEFT:
 			(sb.DI_SCREEN_CENTER_BOTTOM|sb.DI_ITEM_CENTER_BOTTOM)
+		);
+
+		sb.drawstring(
+			sb.pnewsmallfont,sb.formatnumber(antigrav_charge),
+			am?(14,136):(84,-10),
+			am?(sb.DI_TOPLEFT|sb.DI_TEXT_ALIGN_RIGHT)
+			:(sb.DI_SCREEN_CENTER_BOTTOM|sb.DI_TEXT_ALIGN_RIGHT),
+			Font.CR_RED,scale:(0.5,0.5)
 		);
 	}
 
