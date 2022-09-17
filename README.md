@@ -12,3 +12,5 @@ Bonus: Anti-Gravity Boots
 Similar to the Anti-Radiation Boots, but painted in cherry red.
 These boots allow the wearer to lower their gravity to jump across
 large gaps, or get into hard-to-reach areas.
+
+Loadout code: AGV
