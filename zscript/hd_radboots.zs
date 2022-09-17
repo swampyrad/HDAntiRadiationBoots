@@ -64,19 +64,20 @@ class WornRadBoots:HDDamageHandler{
 		);
 	}
 */
+	//screw it, going back to the old DrawHUDStuff code,
+	//i'm not dealing with stupid statusbar bullshit
 	override void DrawHudStuff(
 		hdstatusbar sb,
 		hdplayerpawn hpl,
 		int hdflags,
 		int gzflags
 	){
-		//can't make this work properly, it's supposed to 
-		//draw the boots where the armor is
+		bool am=hdflags&HDSB_AUTOMAP;
 		sb.drawimage(
 			"RDBTA0",
-			(hdflags&HDSB_AUTOMAP)?(4,86):
-			(hdflags&HDSB_MUGSHOT)?((sb.hudlevel==1?-85:-55),-14):
-			(0,-sb.mIndexFont.mFont.GetHeight()*2)
+			am?(11,137):(84,-3),
+			am?sb.DI_TOPLEFT:
+			(sb.DI_SCREEN_CENTER_BOTTOM|sb.DI_ITEM_CENTER_BOTTOM)
 		);
 	}
 
