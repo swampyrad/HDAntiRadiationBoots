@@ -47,7 +47,7 @@ class WornAntiGravBoots:HDDamageHandler{
 	}
 	override void DetachFromOwner(){
 		owner.A_TakeInventory("AntiGravBoots",1);
-		HDArmour.ArmourChangeEffect(owner,60);
+		HDArmour.ArmourChangeEffect(owner,10);
 		//this triggers the stun effect when removing gear
 		//the number seems to control how long the stun lasts
 
@@ -60,16 +60,22 @@ class WornAntiGravBoots:HDDamageHandler{
 		if(stamina>0)stamina--;
 
 		let hp=HDPlayerPawn(owner);
-
-		if(hp&&antigrav_charge>0){
+        
+        //the boots should recharge if you're not moving
+		if(hp&&antigrav_charge>0&&countinv("IsMoving")>3){
 			antigrav_charge--;
 
+            //if the boots have a charge, they'll 
+            //lower your gravity
 			if(!antigrav_charge<1){
 				owner.gravity=HDCONST_GRAVITY/3;
-			}else owner.gravity=HDCONST_GRAVITY;
+			}
+			else owner.gravity=HDCONST_GRAVITY;
 
-		}else 
-		
+		}//if the player is still, the boots will recharge
+		else if(antigrav_charge<ANTIGRAV_MAXCHARGE)
+		    antigrav_charge++;
+		    
 		if(!hp){destroy();return;}
 	}
 
@@ -107,9 +113,10 @@ class WornAntiGravBoots:HDDamageHandler{
 			am?sb.DI_TOPLEFT:
 			(sb.DI_SCREEN_CENTER_BOTTOM|sb.DI_ITEM_CENTER_BOTTOM)
 		);
-
+        
+        //draws charge amount on boots sprite
 		sb.drawstring(
-			sb.pnewsmallfont,sb.formatnumber(antigrav_charge),
+			sb.pnewsmallfont,sb.formatnumber(antigrav_charge/5),
 			am?(14,136):(84,-10),
 			am?(sb.DI_TOPLEFT|sb.DI_TEXT_ALIGN_RIGHT)
 			:(sb.DI_SCREEN_CENTER_BOTTOM|sb.DI_TEXT_ALIGN_RIGHT),
@@ -211,7 +218,7 @@ class AntiGravBoots:HDPickup{
 				invoker.wornlayer=0;
 			}
 
-			HDArmour.ArmourChangeEffect(self,60);//default is 120
+			HDArmour.ArmourChangeEffect(self,10);//default is 120
 			let onr=HDPlayerPawn(self);
 			if(!countinv("WornAntiGravBoots")){
 				A_GiveInventory("WornAntiGravBoots");
